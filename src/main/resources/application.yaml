@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: placementportal
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aligner
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
