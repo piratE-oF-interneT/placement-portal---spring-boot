@@ -1,4 +1,4 @@
-git checkout mainpackage com.portal.placementportal.service.impl;
+package com.portal.placementportal.service.impl;
 
 import java.util.List;
 
@@ -73,6 +73,13 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(readOnly = true)
     public List<Student> listByCollege(Long collegeId) {
         return studentRepository.findByCollege_CollegeId(collegeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Student> listByCollege(
+            Long collegeId, org.springframework.data.domain.Pageable pageable) {
+        return studentRepository.findByCollege_CollegeId(collegeId, pageable);
     }
 
     @Override

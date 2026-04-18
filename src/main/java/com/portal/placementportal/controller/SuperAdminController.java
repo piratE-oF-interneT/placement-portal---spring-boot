@@ -3,8 +3,9 @@ package com.portal.placementportal.controller;
 import com.portal.placementportal.dto.AuthDtos.CreateAdminRequest;
 import com.portal.placementportal.dto.AuthDtos.CreateCollegeRequest;
 import com.portal.placementportal.dto.AuthDtos.CreateSuperAdminRequest;
-import com.portal.placementportal.entity.AdminUser;
-import com.portal.placementportal.entity.College;
+import com.portal.placementportal.dto.EntityMapper;
+import com.portal.placementportal.dto.ResponseDtos.AdminUserResponse;
+import com.portal.placementportal.dto.ResponseDtos.CollegeResponse;
 import com.portal.placementportal.entity.Role;
 import com.portal.placementportal.security.RequestContext;
 import com.portal.placementportal.service.AdminUserService;
@@ -32,40 +33,45 @@ public class SuperAdminController {
      * production once the first superadmin exists.
      */
     @PostMapping("/bootstrap")
-    public ResponseEntity<AdminUser> bootstrap(@Valid @RequestBody CreateSuperAdminRequest request) {
-        return ResponseEntity.ok(adminUserService.createSuperAdmin(request));
+    public ResponseEntity<AdminUserResponse> bootstrap(@Valid @RequestBody CreateSuperAdminRequest request) {
+        return ResponseEntity.ok(EntityMapper.toAdminUser(
+                adminUserService.createSuperAdmin(request)));
     }
 
     @PostMapping("/superadmins")
-    public ResponseEntity<AdminUser> createSuperAdmin(HttpServletRequest http,
-                                                      @Valid @RequestBody CreateSuperAdminRequest request) {
+    public ResponseEntity<AdminUserResponse> createSuperAdmin(HttpServletRequest http,
+                                                              @Valid @RequestBody CreateSuperAdminRequest request) {
         requestContext.requireRole(http, Role.SUPERADMIN);
-        return ResponseEntity.ok(adminUserService.createSuperAdmin(request));
+        return ResponseEntity.ok(EntityMapper.toAdminUser(
+                adminUserService.createSuperAdmin(request)));
     }
 
     @PostMapping("/colleges")
-    public ResponseEntity<College> createCollege(HttpServletRequest http,
-                                                 @Valid @RequestBody CreateCollegeRequest request) {
+    public ResponseEntity<CollegeResponse> createCollege(HttpServletRequest http,
+                                                         @Valid @RequestBody CreateCollegeRequest request) {
         requestContext.requireRole(http, Role.SUPERADMIN);
-        return ResponseEntity.ok(collegeService.create(request));
+        return ResponseEntity.ok(EntityMapper.toCollege(collegeService.create(request)));
     }
 
     @GetMapping("/colleges")
-    public ResponseEntity<List<College>> listColleges(HttpServletRequest http) {
+    public ResponseEntity<List<CollegeResponse>> listColleges(HttpServletRequest http) {
         requestContext.requireRole(http, Role.SUPERADMIN);
-        return ResponseEntity.ok(collegeService.list());
+        return ResponseEntity.ok(EntityMapper.mapList(
+                collegeService.list(), EntityMapper::toCollege));
     }
 
     @PostMapping("/admins")
-    public ResponseEntity<AdminUser> createAdmin(HttpServletRequest http,
-                                                 @Valid @RequestBody CreateAdminRequest request) {
+    public ResponseEntity<AdminUserResponse> createAdmin(HttpServletRequest http,
+                                                         @Valid @RequestBody CreateAdminRequest request) {
         requestContext.requireRole(http, Role.SUPERADMIN);
-        return ResponseEntity.ok(adminUserService.createAdmin(request));
+        return ResponseEntity.ok(EntityMapper.toAdminUser(
+                adminUserService.createAdmin(request)));
     }
 
     @GetMapping("/admins")
-    public ResponseEntity<List<AdminUser>> listAdmins(HttpServletRequest http) {
+    public ResponseEntity<List<AdminUserResponse>> listAdmins(HttpServletRequest http) {
         requestContext.requireRole(http, Role.SUPERADMIN);
-        return ResponseEntity.ok(adminUserService.listAllAdmins());
+        return ResponseEntity.ok(EntityMapper.mapList(
+                adminUserService.listAllAdmins(), EntityMapper::toAdminUser));
     }
 }

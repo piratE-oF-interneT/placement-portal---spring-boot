@@ -1,6 +1,8 @@
 package com.portal.placementportal.repository;
 
 import com.portal.placementportal.entity.Student;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,4 +14,5 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     boolean existsByUsnIgnoreCase(String usn);
     boolean existsByEmailIgnoreCase(String email);
     List<Student> findByCollege_CollegeId(Long collegeId);
+    Page<Student> findByCollege_CollegeId(Long collegeId, Pageable pageable);
 }

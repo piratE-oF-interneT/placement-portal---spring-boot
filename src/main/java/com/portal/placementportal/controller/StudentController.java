@@ -1,11 +1,12 @@
 package com.portal.placementportal.controller;
 
+import com.portal.placementportal.dto.EntityMapper;
+import com.portal.placementportal.dto.ResponseDtos.CompanyResponse;
+import com.portal.placementportal.dto.ResponseDtos.RegistrationResponse;
+import com.portal.placementportal.dto.ResponseDtos.StudentResponse;
 import com.portal.placementportal.dto.StudentDtos.ChangePasswordRequest;
 import com.portal.placementportal.dto.StudentDtos.UpdateProfileRequest;
-import com.portal.placementportal.entity.Company;
-import com.portal.placementportal.entity.Registration;
 import com.portal.placementportal.entity.Role;
-import com.portal.placementportal.entity.Student;
 import com.portal.placementportal.security.CurrentUser;
 import com.portal.placementportal.security.RequestContext;
 import com.portal.placementportal.service.CompanyService;
@@ -23,7 +24,8 @@ import java.util.List;
 
 /**
  * Student-facing dashboard. All actions are scoped to the caller's own student id
- * and to the companies of their own college.
+ * and to the companies of their own college. All responses are DTOs; the JPA
+ * entities never leave the service layer.
  */
 @RestController
 @RequestMapping("/api/student")
@@ -37,16 +39,17 @@ public class StudentController {
     private final RequestContext requestContext;
 
     @GetMapping("/me")
-    public ResponseEntity<Student> me(HttpServletRequest http) {
+    public ResponseEntity<StudentResponse> me(HttpServletRequest http) {
         CurrentUser cu = requestContext.requireRole(http, Role.STUDENT);
-        return ResponseEntity.ok(studentService.getById(cu.userId()));
+        return ResponseEntity.ok(EntityMapper.toStudent(studentService.getById(cu.userId())));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<Student> updateProfile(HttpServletRequest http,
-                                                 @Valid @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<StudentResponse> updateProfile(HttpServletRequest http,
+                                                         @Valid @RequestBody UpdateProfileRequest request) {
         CurrentUser cu = requestContext.requireRole(http, Role.STUDENT);
-        return ResponseEntity.ok(studentService.updateProfile(cu.userId(), request));
+        return ResponseEntity.ok(EntityMapper.toStudent(
+                studentService.updateProfile(cu.userId(), request)));
     }
 
     @PostMapping("/me/password")
@@ -58,22 +61,25 @@ public class StudentController {
     }
 
     @GetMapping("/companies")
-    public ResponseEntity<List<Company>> listCompanies(HttpServletRequest http) {
+    public ResponseEntity<List<CompanyResponse>> listCompanies(HttpServletRequest http) {
         CurrentUser cu = requestContext.requireRole(http, Role.STUDENT);
-        return ResponseEntity.ok(companyService.listActiveForCollege(cu.collegeId()));
+        return ResponseEntity.ok(EntityMapper.mapList(
+                companyService.listActiveForCollege(cu.collegeId()), EntityMapper::toCompany));
     }
 
     @PostMapping("/companies/{companyId}/register")
-    public ResponseEntity<Registration> registerToCompany(HttpServletRequest http,
-                                                          @PathVariable @Positive Long companyId) {
+    public ResponseEntity<RegistrationResponse> registerToCompany(HttpServletRequest http,
+                                                                  @PathVariable @Positive Long companyId) {
         CurrentUser cu = requestContext.requireRole(http, Role.STUDENT);
         companyService.getScopedToCollege(companyId, cu.collegeId()); // scope check
-        return ResponseEntity.ok(registrationService.apply(cu.userId(), companyId));
+        return ResponseEntity.ok(EntityMapper.toRegistration(
+                registrationService.apply(cu.userId(), companyId)));
     }
 
     @GetMapping("/registrations")
-    public ResponseEntity<List<Registration>> myRegistrations(HttpServletRequest http) {
+    public ResponseEntity<List<RegistrationResponse>> myRegistrations(HttpServletRequest http) {
         CurrentUser cu = requestContext.requireRole(http, Role.STUDENT);
-        return ResponseEntity.ok(registrationService.listForStudent(cu.userId()));
+        return ResponseEntity.ok(EntityMapper.mapList(
+                registrationService.listForStudent(cu.userId()), EntityMapper::toRegistration));
     }
 }

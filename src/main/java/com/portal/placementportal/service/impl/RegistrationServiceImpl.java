@@ -90,6 +90,13 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Registration> listForCompany(
+            Long companyId, org.springframework.data.domain.Pageable pageable) {
+        return registrationRepository.findByCompany_CompanyId(companyId, pageable);
+    }
+
+    @Override
     @Transactional
     public Registration updateStatus(Long registrationId, RegistrationStatus status, Long adminCollegeId) {
         Registration r = registrationRepository.findById(registrationId)
@@ -99,6 +106,21 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
         r.setStatus(status);
         return r;
+    }
+
+    @Override
+    @Transactional
+    public Registration updateStatus(Long registrationId, String rawStatus, Long adminCollegeId) {
+        if (rawStatus == null || rawStatus.isBlank()) {
+            throw new InvalidRequestException("status is required");
+        }
+        RegistrationStatus status;
+        try {
+            status = RegistrationStatus.valueOf(rawStatus.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRequestException("Invalid registration status: " + rawStatus);
+        }
+        return updateStatus(registrationId, status, adminCollegeId);
     }
 
     private void checkBlacklist(Student student) {

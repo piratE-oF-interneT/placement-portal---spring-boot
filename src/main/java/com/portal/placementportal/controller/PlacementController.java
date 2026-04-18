@@ -1,7 +1,8 @@
 package com.portal.placementportal.controller;
 
+import com.portal.placementportal.dto.EntityMapper;
 import com.portal.placementportal.dto.PlacementDtos.PlaceStudentRequest;
-import com.portal.placementportal.entity.Placement;
+import com.portal.placementportal.dto.ResponseDtos.PlacementResponse;
 import com.portal.placementportal.entity.Role;
 import com.portal.placementportal.security.CurrentUser;
 import com.portal.placementportal.security.RequestContext;
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Admin-only endpoints for recording placement outcomes.
+ * Admin-only endpoints for recording placement outcomes. Responses are
+ * always {@link PlacementResponse} DTOs, never Placement entities.
  */
 @RestController
 @RequestMapping("/api/admin/placements")
@@ -29,23 +31,26 @@ public class PlacementController {
     private final RequestContext requestContext;
 
     @PostMapping
-    public ResponseEntity<Placement> placeStudent(HttpServletRequest http,
-                                                  @Valid @RequestBody PlaceStudentRequest request) {
+    public ResponseEntity<PlacementResponse> placeStudent(HttpServletRequest http,
+                                                          @Valid @RequestBody PlaceStudentRequest request) {
         CurrentUser cu = requestContext.requireRole(http, Role.ADMIN);
-        return ResponseEntity.ok(placementService.placeStudent(cu.userId(), request));
+        return ResponseEntity.ok(EntityMapper.toPlacement(
+                placementService.placeStudent(cu.userId(), request)));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Placement>> listForStudent(HttpServletRequest http,
-                                                          @PathVariable @Positive Long studentId) {
+    public ResponseEntity<List<PlacementResponse>> listForStudent(HttpServletRequest http,
+                                                                  @PathVariable @Positive Long studentId) {
         requestContext.requireRole(http, Role.ADMIN);
-        return ResponseEntity.ok(placementService.listForStudent(studentId));
+        return ResponseEntity.ok(EntityMapper.mapList(
+                placementService.listForStudent(studentId), EntityMapper::toPlacement));
     }
 
     @GetMapping("/company/{companyId}")
-    public ResponseEntity<List<Placement>> listForCompany(HttpServletRequest http,
-                                                          @PathVariable @Positive Long companyId) {
+    public ResponseEntity<List<PlacementResponse>> listForCompany(HttpServletRequest http,
+                                                                  @PathVariable @Positive Long companyId) {
         CurrentUser cu = requestContext.requireRole(http, Role.ADMIN);
-        return ResponseEntity.ok(placementService.listForCompany(companyId, cu.collegeId()));
+        return ResponseEntity.ok(EntityMapper.mapList(
+                placementService.listForCompany(companyId, cu.collegeId()), EntityMapper::toPlacement));
     }
 }
