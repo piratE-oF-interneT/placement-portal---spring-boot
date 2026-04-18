@@ -11,8 +11,11 @@ import java.util.Optional;
 
 public interface RegistrationRepository extends JpaRepository<Registration, Long> {
     List<Registration> findByStudent_StudentId(Long studentId);
+
     List<Registration> findByCompany_CompanyId(Long companyId);
+
     Optional<Registration> findByStudent_StudentIdAndCompany_CompanyId(Long studentId, Long companyId);
+
     boolean existsByStudent_StudentIdAndCompany_CompanyId(Long studentId, Long companyId);
 
     /**
@@ -21,6 +24,6 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
      * large drives. The entity graph pre-loads student + company so the
      * mapping pass does not trigger N+1 association fetches.
      */
-    @EntityGraph(attributePaths = {"student", "company"})
+    @EntityGraph(attributePaths = { "student", "company" })
     Page<Registration> findByCompany_CompanyId(Long companyId, Pageable pageable);
 }

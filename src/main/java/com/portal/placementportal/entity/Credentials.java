@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Authentication credentials for any portal user (student / admin / superadmin).
+ * Authentication credentials for any portal user (student / admin /
+ * superadmin).
  * Decouples the authentication material (email + hashed password) from the
  * domain entities (Student / AdminUser) so that account recovery, rotation and
  * role changes can be handled without touching domain tables.
